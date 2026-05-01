@@ -1,1 +1,1 @@
-# LLM-aided-A_star-for-networks
+# LLM-aided A* for networks
