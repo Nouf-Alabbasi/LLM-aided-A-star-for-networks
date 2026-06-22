@@ -476,6 +476,3 @@ From the identified path, select a set of {num_waypoints} key waypoints.
 Answer: [node_ID, node_ID, ..., {goal}]
 """
 
-
-# Path compare from P. Agrawal's paper
-# Let’s list down all the possible paths from node {X} to node {Y}, and compare the cost to get the answer.
