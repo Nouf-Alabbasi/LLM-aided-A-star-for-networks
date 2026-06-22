@@ -33,9 +33,8 @@ import examples
 from sortedcontainers import SortedList
 
 class A_search:
-    def __init__(self,graph,model_name,functions,service_DR,print_ = False,graph_layers=None):
+    def __init__(self,graph,model_name,functions,service_DR,print_ = False):
         self.graph = graph
-        self.graph_layers = graph_layers
         self.print_ = print_
         self.model_name = model_name
         self.functions = functions
@@ -817,7 +816,7 @@ class A_search:
             raise nx.NetworkXNoPath(f"Node {goal} not reachable from {source}")
 
 
-    def _generate_llm_query(self, start, goal,h,layered,graph_layers,node_ID_format,prompt_,len_layers,graph=None):
+    def _generate_llm_query(self, start, goal,h,layered,node_ID_format,prompt_,len_layers,graph=None):
         """Generate the query for the LLM."""       
         if graph == None:
             G = self.graph
@@ -842,11 +841,6 @@ class A_search:
         # one_layer_adj = get_adj_list_cost(self.LayerGraphs[0]["layer_graph"])
 
         gateway_nodes = ""
-        if layered:
-            for i in range(len_layers):
-                # print(i)
-                # print( "<- here, and here->",self.LayerGraphs[i]['layer_gateways'])
-                gateway_nodes = gateway_nodes+f"\nThe gateway nodes in layer {i} are {[(u,v,c) for u,c,v in graph_layers[i]['layer_gateways']]}"
         if node_ID_format == "L0_3":
             output_example_path = "['L0_10', 'L0_23', 'L1_23', 'L1_45', 'L2_45', 'L2_67', 'L3_67']"
             interpetation = """
@@ -952,9 +946,9 @@ class A_search:
                 return label
         return labels[-1]        
 
-    def _initialize_llm_paths_limited(self,layered,graph_layers,node_ID_format,prompt_,len_layers,review=False, h=False,adj_list_format="other",graph=None):
+    def _initialize_llm_paths_limited(self,layered,node_ID_format,prompt_,len_layers,review=False, h=False,adj_list_format="other",graph=None):
         self.adj_list_format = adj_list_format
-        query = self._generate_llm_query(self.source, self.goal,h,layered,graph_layers,node_ID_format,prompt_,len_layers,graph=graph)
+        query = self._generate_llm_query(self.source, self.goal,h,layered,node_ID_format,prompt_,len_layers,graph=graph)
         if review:
             query = query+" Please ensure that the output is in the format specified."
 
@@ -1058,10 +1052,10 @@ class A_search:
         return query,full_output, self.target_list,record
     
 
-    def _initialize_llm_paths(self,layered,graph_layers,node_ID_format,prompt_,len_layers,review=False, h=False,adj_list_format="other",graph=None):
+    def _initialize_llm_paths(self,layered,node_ID_format,prompt_,len_layers,review=False, h=False,adj_list_format="other",graph=None):
 
         self.adj_list_format = adj_list_format
-        query = self._generate_llm_query(self.source, self.goal,h,layered,graph_layers,node_ID_format,prompt_,len_layers,graph=graph)
+        query = self._generate_llm_query(self.source, self.goal,h,layered,node_ID_format,prompt_,len_layers,graph=graph)
         if review:
             query = query+" Please ensure that the output is in the format specified."
 
@@ -3260,39 +3254,25 @@ class A_search:
 
         return landmarks
 
-    def generate_landmarks(self,type_,selection_tech,k_landmarks,graph_layers,rng):
-        if type_ == "layered":
-            if selection_tech == "furthest":
-                landmarks = landmark_picker.pick_landmarks_from_layergraphs(
-                    self.graph,
-                    graph_layers,
-                    rng = rng,
-                    k=k_landmarks,
-                )
-            else:
-                landmarks = landmark_picker.pick_landmarks_random(
-                    self.graph,
-                    k=k_landmarks,
-                    rng = rng,
-                )
+    def generate_landmarks(self,type_,selection_tech,k_landmarks,rng):
 
-        else:
-            if selection_tech == "furthest":
-                # landmarks = landmark_picker.pick_landmarks_top_degree(
-                landmarks = landmark_picker.pick_landmarks_farthest_point(
-                    self.graph,
-                    k=k_landmarks,
-                    rng = rng,
-                    # weight="Cost",
-                    # seed=42,
-                    # require_reachability_frac=0.2,   # optional, helps on directed graphs
-                )
-            else: 
-                landmarks = landmark_picker.pick_landmarks_random(
-                    self.graph,
-                    k=k_landmarks,
-                    rng = rng,
-                )
+
+        if selection_tech == "furthest":
+            # landmarks = landmark_picker.pick_landmarks_top_degree(
+            landmarks = landmark_picker.pick_landmarks_farthest_point(
+                self.graph,
+                k=k_landmarks,
+                rng = rng,
+                # weight="Cost",
+                # seed=42,
+                # require_reachability_frac=0.2,   # optional, helps on directed graphs
+            )
+        else: 
+            landmarks = landmark_picker.pick_landmarks_random(
+                self.graph,
+                k=k_landmarks,
+                rng = rng,
+            )
 
         self.preprocess_landmarks(landmarks, weight="Cost")
     
@@ -3575,9 +3555,7 @@ def ensure_src_dest_sets_for_graph(registry, gkey, set_count, pairs_per_set,
 
         G = load_graph_from_registry(registry, gkey)
 
-        # If layered, you’ll need graph_layers. If your A_search expects it from builder,
-        # you can store graph_struct="flat" for now, or serialize layers separately.
-        graph_layers = None
+
 
         path_finder = A_search(G, model_name, functions, service_DR, print_=False)
 
@@ -3587,7 +3565,7 @@ def ensure_src_dest_sets_for_graph(registry, gkey, set_count, pairs_per_set,
                 "random_from_max",
                 graph_struct,
                 node_ID_format,
-                graph_layers,
+                "network_graph",
                 Last_layer=len_layers,
                 rng=rng
             )
@@ -3596,7 +3574,7 @@ def ensure_src_dest_sets_for_graph(registry, gkey, set_count, pairs_per_set,
                     "random_from_max",
                     graph_struct,
                     node_ID_format,
-                    graph_layers,
+                    "network_graph",
                     Last_layer=len_layers,
                     rng=rng
                 )
