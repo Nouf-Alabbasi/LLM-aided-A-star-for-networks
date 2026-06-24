@@ -1,7 +1,7 @@
 # LLM-aided A* for networks
-[![arXiv](https://img.shields.io/badge/arXiv-2411.02617-b31b1b.svg)]()
+[![arXiv](https://img.shields.io/badge/arXiv-2606.23136-b31b1b.svg)]()
 
-This repository contains the source code for the paper ["<u>LLM-Aided A* Search in Non-Geometric Network Graphs</u>"]().
+This repository contains the source code for the paper ["<u>LLM-Aided A* Search in Non-Geometric Network Graphs</u>"](https://arxiv.org/abs/2606.23136).
 
 ### ABSTRACT
 We propose a large language model (LLM)- aided A* algorithm in which an LLM generates intermediate waypoints that guide the A* expansion toward promising graph regions. On the solver side, we adopt the landmark- based (ALT) heuristic, which replaces geometric estimates with admissible lower bounds derived from precomputed shortest path distances to a small set of landmark nodes via the triangle inequality. On the LLM side, we inject the resulting heuristic estimates into the waypoint generation prompt, where they act as a surrogate coordinate system that restores to the model the distance-to-destination signal it loses on abstract graphs. Guided by this signal, the LLM proposes a set of intermediate waypoints, and the estimated distance to the current waypoint augments the A* evaluation function, biasing expansion toward promising regions of the graph while A* remains the underlying solver.
@@ -29,6 +29,14 @@ Figure 2: Comparison of standard A* and LLM-aided A* on larger graphs (250–200
 
 ## Citation
 ```
-
+@misc{alabbasi2026llmaidedasearchnongeometric,
+      title={LLM-Aided A* Search in Non-Geometric Network Graphs}, 
+      author={Nouf Alabbasi and Esraa Ghourab and Omar Alhussein},
+      year={2026},
+      eprint={2606.23136},
+      archivePrefix={arXiv},
+      primaryClass={cs.NI},
+      url={https://arxiv.org/abs/2606.23136}, 
+}
 ```
 
