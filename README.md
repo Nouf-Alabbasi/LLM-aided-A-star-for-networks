@@ -1,5 +1,5 @@
 # LLM-aided A* for networks
-[![arXiv](https://img.shields.io/badge/arXiv-2606.23136-b31b1b.svg)]()
+[![arXiv](https://img.shields.io/badge/arXiv-2606.23136-b31b1b.svg)](https://arxiv.org/abs/2606.23136)
 
 This repository contains the source code for the paper ["<u>LLM-Aided A* Search in Non-Geometric Network Graphs</u>"](https://arxiv.org/abs/2606.23136).
 
