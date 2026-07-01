@@ -240,7 +240,6 @@ for waypoint in num_waypoints:
 
 
 
-            # # rerun the search on the same graph (diff source and dest)
             for graph_i, (source, dest) in enumerate(pairs):
                 # =================================== set source and dest
                 run_key = f"run_{overall_i}_{graph_i}_waypoint_{waypoint}_nodes_{num_nodes}"
@@ -250,7 +249,6 @@ for waypoint in num_waypoints:
                     
                 # =================================== generate waypoints
                 print("=================================== generating waypoints")
-                # query_flat,full_output_flat, t_list_flat,LLM_info = ["","",[1],{"latency_s":3, "input_tokens":3 ,"output_tokens":3 ,"total_tokens": 3}] #self._initialize_llm_paths(False)
                 path_finder.set_num_waypoints(waypoint)
 
                 query_flat,full_output_flat, t_list_flat,LLM_info = path_finder._initialize_llm_paths_limited(graph_struct, graph_layers,node_ID_format,prompt,len_layers=len(functions),adj_list_format=adj_list_format)
@@ -262,10 +260,10 @@ for waypoint in num_waypoints:
                 NC_LLMA= [0,0,0]
 
                 # ====== normal A*
-                NC_A = path_finder.astar_path_constrained_flat(test_name="A_star")
+                NC_A = path_finder.astar_path(test_name="A_star")
 
                 # ====== LLM A*
-                NC_LLMA = path_finder.astar_path_constrained_LLM(test_name="LLM_A",t_n_weight=t_n_weight)
+                NC_LLMA = path_finder.astar_path_LLM(test_name="LLM_A",t_n_weight=t_n_weight)
 
                 
                 # =================================== print to file
@@ -342,8 +340,6 @@ for waypoint in num_waypoints:
                 logger.add_run(run_key, run_payload)
 
 
-        # print("writing final results for graph size ",num_nodes," with ",waypoint," waypoints to: ",printing_path, "/", filename)
-        # writer.writerow(CSV_print)
         path_finder.print_to_CSV(full_filename, printing_path, prompt_name, NC_A_dict, NC_LLM_dict, overall_i, num_nodes, len(graph.edges),waypoint_lists,waypoint=waypoint)
 REGISTRY_PATH = Path(printing_path+"/graph") / "registry.json"
 save_registry(REGISTRY_PATH, registry)
