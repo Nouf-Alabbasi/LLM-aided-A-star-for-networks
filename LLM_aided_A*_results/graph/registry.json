@@ -1,0 +1,527 @@
+{
+  "graphs": {
+    "size_750_ver_0_None": {
+      "file": "LLM_aided_A*_results/graphs/size_750_ver_0_road_network.edgelist",
+      "num_nodes": 750,
+      "num_edges": 1962,
+      "edge_degree_param": 4,
+      "graph_type": "road_network",
+      "graph_struct": "network_graph",
+      "cost_mode": "constant",
+      "seed_note": 43
+    },
+    "size_750_ver_1_None": {
+      "file": "LLM_aided_A*_results/graphs/size_750_ver_1_road_network.edgelist",
+      "num_nodes": 750,
+      "num_edges": 1862,
+      "edge_degree_param": 4,
+      "graph_type": "road_network",
+      "graph_struct": "network_graph",
+      "cost_mode": "constant",
+      "seed_note": 43
+    },
+    "size_750_ver_2_None": {
+      "file": "LLM_aided_A*_results/graphs/size_750_ver_2_road_network.edgelist",
+      "num_nodes": 750,
+      "num_edges": 1898,
+      "edge_degree_param": 4,
+      "graph_type": "road_network",
+      "graph_struct": "network_graph",
+      "cost_mode": "constant",
+      "seed_note": 43
+    },
+    "size_750_ver_3_None": {
+      "file": "LLM_aided_A*_results/graphs/size_750_ver_3_road_network.edgelist",
+      "num_nodes": 750,
+      "num_edges": 1796,
+      "edge_degree_param": 4,
+      "graph_type": "road_network",
+      "graph_struct": "network_graph",
+      "cost_mode": "constant",
+      "seed_note": 43
+    },
+    "size_750_ver_4_None": {
+      "file": "LLM_aided_A*_results/graphs/size_750_ver_4_road_network.edgelist",
+      "num_nodes": 750,
+      "num_edges": 2308,
+      "edge_degree_param": 4,
+      "graph_type": "road_network",
+      "graph_struct": "network_graph",
+      "cost_mode": "constant",
+      "seed_note": 43
+    }
+  },
+  "src_dest_sets": {
+    "size_750_ver_0_None": {
+      "set_0": {
+        "method": "random_from_max",
+        "pairs": [
+          [
+            379,
+            246
+          ],
+          [
+            234,
+            206
+          ],
+          [
+            532,
+            746
+          ],
+          [
+            516,
+            344
+          ],
+          [
+            556,
+            15
+          ],
+          [
+            490,
+            36
+          ],
+          [
+            749,
+            538
+          ],
+          [
+            353,
+            547
+          ],
+          [
+            280,
+            206
+          ],
+          [
+            544,
+            5
+          ]
+        ],
+        "note": "10 pairs for itr_graph=10"
+      },
+      "set_1": {
+        "method": "random_from_max",
+        "pairs": [
+          [
+            196,
+            79
+          ],
+          [
+            19,
+            222
+          ],
+          [
+            249,
+            445
+          ],
+          [
+            348,
+            228
+          ],
+          [
+            604,
+            27
+          ],
+          [
+            56,
+            355
+          ],
+          [
+            80,
+            235
+          ],
+          [
+            637,
+            547
+          ],
+          [
+            6,
+            158
+          ],
+          [
+            626,
+            721
+          ]
+        ],
+        "note": "10 pairs for itr_graph=10"
+      }
+    },
+    "size_750_ver_1_None": {
+      "set_0": {
+        "method": "random_from_max",
+        "pairs": [
+          [
+            585,
+            698
+          ],
+          [
+            161,
+            330
+          ],
+          [
+            36,
+            145
+          ],
+          [
+            727,
+            466
+          ],
+          [
+            58,
+            425
+          ],
+          [
+            275,
+            230
+          ],
+          [
+            287,
+            337
+          ],
+          [
+            472,
+            489
+          ],
+          [
+            497,
+            17
+          ],
+          [
+            282,
+            502
+          ]
+        ],
+        "note": "10 pairs for itr_graph=10"
+      },
+      "set_1": {
+        "method": "random_from_max",
+        "pairs": [
+          [
+            475,
+            328
+          ],
+          [
+            353,
+            459
+          ],
+          [
+            39,
+            337
+          ],
+          [
+            731,
+            466
+          ],
+          [
+            743,
+            619
+          ],
+          [
+            291,
+            483
+          ],
+          [
+            423,
+            702
+          ],
+          [
+            566,
+            255
+          ],
+          [
+            618,
+            604
+          ],
+          [
+            437,
+            255
+          ]
+        ],
+        "note": "10 pairs for itr_graph=10"
+      }
+    },
+    "size_750_ver_2_None": {
+      "set_0": {
+        "method": "random_from_max",
+        "pairs": [
+          [
+            505,
+            697
+          ],
+          [
+            507,
+            65
+          ],
+          [
+            633,
+            555
+          ],
+          [
+            579,
+            213
+          ],
+          [
+            624,
+            542
+          ],
+          [
+            317,
+            356
+          ],
+          [
+            474,
+            716
+          ],
+          [
+            179,
+            60
+          ],
+          [
+            562,
+            490
+          ],
+          [
+            502,
+            1
+          ]
+        ],
+        "note": "10 pairs for itr_graph=10"
+      },
+      "set_1": {
+        "method": "random_from_max",
+        "pairs": [
+          [
+            663,
+            328
+          ],
+          [
+            215,
+            716
+          ],
+          [
+            727,
+            331
+          ],
+          [
+            670,
+            563
+          ],
+          [
+            487,
+            642
+          ],
+          [
+            486,
+            60
+          ],
+          [
+            731,
+            655
+          ],
+          [
+            374,
+            726
+          ],
+          [
+            464,
+            78
+          ],
+          [
+            254,
+            456
+          ]
+        ],
+        "note": "10 pairs for itr_graph=10"
+      }
+    },
+    "size_750_ver_3_None": {
+      "set_0": {
+        "method": "random_from_max",
+        "pairs": [
+          [
+            209,
+            656
+          ],
+          [
+            386,
+            610
+          ],
+          [
+            223,
+            744
+          ],
+          [
+            217,
+            693
+          ],
+          [
+            520,
+            656
+          ],
+          [
+            131,
+            631
+          ],
+          [
+            627,
+            40
+          ],
+          [
+            520,
+            656
+          ],
+          [
+            524,
+            485
+          ],
+          [
+            578,
+            340
+          ]
+        ],
+        "note": "10 pairs for itr_graph=10"
+      },
+      "set_1": {
+        "method": "random_from_max",
+        "pairs": [
+          [
+            631,
+            19
+          ],
+          [
+            145,
+            298
+          ],
+          [
+            456,
+            612
+          ],
+          [
+            113,
+            26
+          ],
+          [
+            514,
+            340
+          ],
+          [
+            73,
+            695
+          ],
+          [
+            435,
+            721
+          ],
+          [
+            612,
+            652
+          ],
+          [
+            439,
+            26
+          ],
+          [
+            632,
+            25
+          ]
+        ],
+        "note": "10 pairs for itr_graph=10"
+      }
+    },
+    "size_750_ver_4_None": {
+      "set_0": {
+        "method": "random_from_max",
+        "pairs": [
+          [
+            444,
+            99
+          ],
+          [
+            507,
+            532
+          ],
+          [
+            304,
+            542
+          ],
+          [
+            516,
+            433
+          ],
+          [
+            12,
+            539
+          ],
+          [
+            698,
+            90
+          ],
+          [
+            603,
+            701
+          ],
+          [
+            561,
+            496
+          ],
+          [
+            187,
+            694
+          ],
+          [
+            240,
+            537
+          ]
+        ],
+        "note": "10 pairs for itr_graph=10"
+      },
+      "set_1": {
+        "method": "random_from_max",
+        "pairs": [
+          [
+            656,
+            432
+          ],
+          [
+            556,
+            491
+          ],
+          [
+            194,
+            81
+          ],
+          [
+            507,
+            87
+          ],
+          [
+            736,
+            190
+          ],
+          [
+            717,
+            87
+          ],
+          [
+            459,
+            96
+          ],
+          [
+            670,
+            532
+          ],
+          [
+            602,
+            678
+          ],
+          [
+            633,
+            159
+          ]
+        ],
+        "note": "10 pairs for itr_graph=10"
+      }
+    }
+  },
+  "landmarks": {}
+}

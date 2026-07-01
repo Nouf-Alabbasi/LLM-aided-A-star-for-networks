@@ -44,18 +44,7 @@ def valid_nodes(lst):
         for x in lst
     )
 
-def get_layer(node, nodes_per_layer=None):
-    if isinstance(node, str):
-        # expects "L<num>_<num>"
-        if node.startswith("L") and "_" in node:
-            return int(node[1:node.index("_")])
-        return None
 
-    if isinstance(node, int) and nodes_per_layer is not None:
-        # 1-based encoding: X*nodes + i, i in 1..nodes
-        return (node - 1) // nodes_per_layer
-
-    return None
 
 def pick_valid_src_goal(
     G,
@@ -64,7 +53,7 @@ def pick_valid_src_goal(
     rng,
     num_layers: int,
     layer_format: bool,
-    layered: bool,
+    _: bool,
     max_tries: int = 20,
     flat = False,
     functions = None,
@@ -76,32 +65,16 @@ def pick_valid_src_goal(
     If not found within max_tries, returns (None, None).
     """
 
-    # If NOT using string node names, define how to pick goal range
-    # if not layer_format:
-    #     if layered:
-    #         start_last_layer = num_layers * nodes
-    #         end_last_layer = (num_layers + 1) * nodes - 1
-    #     else:
-    #         start_last_layer = max(0, nodes // 2)   # was int(nodes-1/2) (buggy)
-    #         end_last_layer = nodes - 1
-
     for _ in range(max_tries):
         if flat:
             source,goal = rng.sample(list(LayerGraphs[0]["layer_graph"].nodes),k=2)
-            if layer_format :
-                layered_goal = f"L{len(functions)}_{goal[3:]}"
-            else:
-                layered_goal = (len(functions)) * nodes + goal
-        else:
-            source = rng.choice(list(LayerGraphs[0]["layer_graph"].nodes))
-            goal = rng.choice(list(LayerGraphs[-1]["layer_graph"].nodes))
-            layered_goal=None
+            layered_goal = (len(functions)) * nodes + goal
 
         # Existence + reachability
         if source in G and goal in G and nx.has_path(G, source, goal):
-            if not flat and not nx.has_path(G, source, layered_goal):
+            if not flat and not nx.has_path(G, source, "_"):
                 pass
-            return source, goal,layered_goal
+            return source, goal,"_"
 
     return None, None,None
 
@@ -297,7 +270,7 @@ def suboptimal_by_removing_edge(G, source, goal, weight="Cost"):
     return top2[1]  # sub-optimal (2nd best)
 
 
-open_AI_key = ""
+open_AI_key =""
 client = OpenAI(api_key = open_AI_key)
 def get_adj_list_cost(graph):
     # Get the adjacency list
@@ -406,116 +379,12 @@ def compute_pos_spread(G, method="sfdp", seed=42, k=5.5, iterations=300):
 
 
 
-def stacked_layer_pos(
-    G: nx.DiGraph,
-    num_nodes_per_layer: int,
-    layer_attr: str = "Layer",
-    phys_attr: str = "node_id",
-    base_layout: str = "spring",
-    seed: int = 42,
-    layer_gap: float = 30.0,   # vertical spacing between layers
-    x_scale: float = 8.0,
-    y_scale: float = 20.0,
-):
-    """
-    Creates a position dict for a layered graph where each layer is placed
-    under the previous one, reusing the same x-position for the same physical node.
-    """
-
-    # --- pick one representative node per physical id (prefer layer 0) ---
-    # We'll build a "physical" graph layout on the original node ids [0..num_nodes_per_layer-1]
-    # by extracting edges from layer 0 (or any single layer).
-    H = nx.DiGraph()
-    H.add_nodes_from(range(num_nodes_per_layer))
-
-    # Use edges from layer 0 only to avoid duplicates
-    for u, v in G.edges():
-        lu = G.nodes[u].get(layer_attr, None)
-        lv = G.nodes[v].get(layer_attr, None)
-        pu = G.nodes[u].get(phys_attr, None)
-        pv = G.nodes[v].get(phys_attr, None)
-
-        # Only horizontal edges within the same layer (choose layer 0 as reference)
-        if lu == lv == 0 and pu is not None and pv is not None and pu != pv:
-            H.add_edge(pu, pv)
-
-    # If layer 0 had no edges (rare), fall back to using any-layer horizontal edges
-    if H.number_of_edges() == 0:
-        for u, v in G.edges():
-            lu = G.nodes[u].get(layer_attr, None)
-            lv = G.nodes[v].get(layer_attr, None)
-            pu = G.nodes[u].get(phys_attr, None)
-            pv = G.nodes[v].get(phys_attr, None)
-            if lu == lv and pu is not None and pv is not None and pu != pv:
-                H.add_edge(pu, pv)
-
-    # --- compute base positions for physical nodes ---
-    if base_layout == "spring":
-        base_pos = nx.spring_layout(H, seed=seed)
-    elif base_layout == "kamada_kawai":
-        base_pos = nx.kamada_kawai_layout(H)
-    elif base_layout == "spectral":
-        base_pos = nx.spectral_layout(H)
-    elif base_layout == "circular":
-        base_pos = nx.circular_layout(H)
-    else:
-        raise ValueError(f"Unknown base_layout: {base_layout}")
-
-    # --- map to layered nodes: same x per physical node, y shifted by layer ---
-    pos = {}
-    for n, data in G.nodes(data=True):
-        layer = int(data.get(layer_attr, 0))
-        phys = data.get(phys_attr, None)
-        if phys is None:
-            # fallback: infer physical id from your encoding i*num_nodes + phys
-            phys = int(n) % num_nodes_per_layer
-
-        x0, y0 = base_pos.get(phys, (0.0, 0.0))
-        x = x_scale * float(x0)
-        y = y_scale * float(y0) - layer * layer_gap
-        pos[n] = (x, y)
-
-    return pos
 
 def freeze_pos_into_graph(G, pos, x_attr="x", y_attr="y"):
     for n in G.nodes:
         G.nodes[n][x_attr] = float(pos[n][0])
         G.nodes[n][y_attr] = float(pos[n][1])
 
-
-
-# def freeze_layout_in_graph_layered(
-#     G,
-#     layout="spring",
-#     seed=42,
-#     layered=False,
-#     num_nodes_per_layer=None,
-#     layer_gap=6.0,
-# ):
-#     if not layered:
-#         if layout == "spring":
-#             pos = nx.spring_layout(G, seed=seed)
-#         elif layout == "kamada_kawai":
-#             pos = nx.kamada_kawai_layout(G)
-#         elif layout == "spectral":
-#             pos = nx.spectral_layout(G)
-#         else:
-#             raise ValueError("Unknown layout")
-#     else:
-#         if num_nodes_per_layer is None:
-#             raise ValueError("num_nodes_per_layer required for layered layout")
-#         pos = stacked_layer_pos(
-#             G,
-#             num_nodes_per_layer=num_nodes_per_layer,
-#             layer_gap=layer_gap,
-#             seed=seed,
-#         )
-
-#     for n in G.nodes:
-#         G.nodes[n]["x"] = float(pos[n][0])
-#         G.nodes[n]["y"] = float(pos[n][1])
-
-#     return G
 
 
 def load_pos_from_graph(G):

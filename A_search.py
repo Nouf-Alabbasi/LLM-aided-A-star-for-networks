@@ -38,11 +38,10 @@ class A_search:
 
     def get_min_edge_delay(self):
         """
-        Get the minimum edge delay in the layered graph.
+        Get the minimum edge delay in the graph.
         :return: Minimum edge delay.
         """
 
-        # cost_list = [data.get("Cost", 1) for _, _, data in self.layer_graph.edges(data=True)]
         cost_list = [data.get("Cost", 1) for _, _, data in self.graph.edges(data=True)]
         self.d_min = min(
             (data.get("Cost", 1) for _, _, data in self.graph.edges(data=True)),
@@ -213,7 +212,7 @@ class A_search:
         # ---- end base capacity precomputation ----
 
 
-        # The queue stores priority, node, cost to reach, parent, and Layer, true_node_id
+        # The queue stores priority, node, cost to reach, parent, true_node_id
         # Uses Python heapq to keep in priority order.
         # Add a counter to the queue to prevent the underlying heap from
         # attempting to compare the nodes themselves. The hash breaks ties in the
@@ -231,8 +230,7 @@ class A_search:
         while queue:
             # Pop the smallest item from queue.
             _, __, curnode, dist, parent = heappop(queue)
-            # node_id= G.nodes[(curnode)]["node_id"]
-            # Layer= G.nodes[(curnode)]["Layer"]
+
 
 
             if curnode == goal:
@@ -324,7 +322,7 @@ class A_search:
         raise nx.NetworkXNoPath(f"Node {goal} not reachable from {source}")
 
         
-    def _generate_llm_query(self, start, goal,h,layered,node_ID_format,prompt_,len_layers,graph=None):
+    def _generate_llm_query(self, start, goal,h,_,node_ID_format,prompt_,__,graph=None):
         """Generate the query for the LLM."""       
         if graph == None:
             G = self.graph
@@ -346,22 +344,16 @@ class A_search:
         h_label_to_edges, h_edge_to_label = self.get_h_label(G)
         # adjacency_list_v2 = print_adj_list_with_cost(self.BA_G,cost_key = "Cost")
         adjacency_list_v2 = ['placeholder list']
-        # one_layer_adj = get_adj_list_cost(self.LayerGraphs[0]["layer_graph"])
 
         gateway_nodes = ""
         if node_ID_format == "L0_3":
             output_example_path = "['L0_10', 'L0_23', 'L1_23', 'L1_45', 'L2_45', 'L2_67', 'L3_67']"
-            interpetation = """
-            Interpretation (Layered graph):
-                Each node ID encodes its layer (e.g., "L0_3", where node 3 is at layer 0).
-                A “gateway” is the node chosen in each layer such that we effectively choose the inter-layer transition
-                from layer l to layer l+1 by selecting a node in layer l and a node in layer l+1."""
+            interpetation = ""
         else:
             output_example_path = "['10', '100', '150','200', '350', '400', '530']"
             interpetation = ""
 
         base_prompt = prompt.format(
-                    # one_layer_adj = one_layer_adj if "{one_layer_adj}" in prompt else "",
                     adjacency_list= adj_list if "{adjacency_list}" in prompt else "",
                     adjacency_list_v2=adjacency_list_v2 if "{adjacency_list_v2}" in prompt else "",
                     gateway_nodes=gateway_nodes if "{gateway_nodes}" in prompt else "",
@@ -373,7 +365,6 @@ class A_search:
                     label_to_edges=label_to_edges if "{label_to_edges}" in prompt else "",
                     output_example = output_example_path if "{output_example}" in prompt else "",
                     interpetation = interpetation if "{interpetation}" in prompt else "",
-                    num_layer = len(self.functions) if "{num_layer}" in prompt else "",
 
                     h_n_values = self.get_h_n() if "{h_n_values}" in prompt else "",
                     h_n_values_labels = h_edge_to_label if "{h_n_values_labels}" in prompt else "", # self.get_h_n() if "{h_n_values}" in prompt else "",
@@ -454,19 +445,15 @@ class A_search:
                 return label
         return labels[-1]        
 
-    def _initialize_llm_paths_limited(self,layered,node_ID_format,prompt_,len_layers,review=False, h=False,adj_list_format="other",graph=None):
+    def _initialize_llm_paths_limited(self,node_ID_format,prompt_,__,review=False, h=False,adj_list_format="other",graph=None):
         self.adj_list_format = adj_list_format
-        query = self._generate_llm_query(self.source, self.goal,h,layered,node_ID_format,prompt_,len_layers,graph=graph)
+        query = self._generate_llm_query(self.source, self.goal,h,"_",node_ID_format,prompt_,"_",graph=graph)
         if review:
             query = query+" Please ensure that the output is in the format specified."
 
 
-        if "r each candidate node, assign a sco" in query:
-            path_ = NodeScore
-        elif node_ID_format=="L0_3":
-            path_ = path_v2
-        else:
-            path_ = path
+
+        path_ = path
 
         desired_count = self.num_waypoints
         max_retries = 5
@@ -560,205 +547,6 @@ class A_search:
         return query,full_output, self.target_list,record
     
 
-    def _initialize_llm_paths(self,layered,node_ID_format,prompt_,len_layers,review=False, h=False,adj_list_format="other",graph=None):
-
-        self.adj_list_format = adj_list_format
-        query = self._generate_llm_query(self.source, self.goal,h,layered,node_ID_format,prompt_,len_layers,graph=graph)
-        if review:
-            query = query+" Please ensure that the output is in the format specified."
-
-
-        if "r each candidate node, assign a sco" in query:
-            path_ = NodeScore
-        elif node_ID_format=="L0_3":
-            path_ = path_v2
-        else:
-            path_ = path
-
-        t0 = time.perf_counter()            
-        response = client.responses.parse(
-            model=self.model_name,
-            input=[
-                {
-                    "role": "system",
-                    "content": "you are a helpful network optimization assistant.",
-                },
-                {"role": "user", "content": query},
-            ],
-            text_format=path_,
-        )
-        latency_s = time.perf_counter() - t0
-
-        # compliance = response.output_parsed
-        counter = 0
-
-        try:
-            full_output = response.output[0].content[0].text
-            self.json_response = json.loads(full_output)
-            temp_target_list = extract_nodes(self.json_response)
-        except Exception:
-            full_output = msg0 = response.output[0] if response.output else None
-            c0 = msg0.content[0] if (msg0 and getattr(msg0, "content", None)) else None
-
-            if c0 is None:
-                text = None
-            elif getattr(c0, "type", None) == "refusal":
-                text = getattr(c0, "refusal", None)  # not .text
-            else:
-                text = getattr(c0, "text", None)
-
-            try:
-                # self.target_list = ast.literal_eval(text)
-                temp_target_list = ast.literal_eval(text)
-            except ValueError:
-                temp_target_list = [x.strip() for x in text.strip("[]").split(",")]
-        
-        # =========================== eval infomration
-        usage = getattr(response, "usage", None)
-        record = {
-            "latency_s": latency_s,
-            "input_tokens": getattr(usage, "input_tokens", None) if usage else None,
-            "output_tokens": getattr(usage, "output_tokens", None) if usage else None,
-            "total_tokens": getattr(usage, "total_tokens", None) if usage else None,
-        }
-        
-        self.target_list=[]
-        for i in temp_target_list:
-            if i in self.graph:
-                self.target_list.append(i)
-
-        if not valid_nodes(self.target_list):
-            self._initialize_llm_paths(layered,True)
-
-        # self.target_list = response.output_parsed.node
-
-        if (self.print_):
-            print("LLM response:", self.json_response)
-
-        # ensure that the source and goal nodes are included in the list
-        if (self.source not in self.target_list):
-            if(self.print_):
-                print("The source was not included in the list")
-            self.target_list.insert(0, self.source)
-        if (self.goal not in self.target_list):
-            if(self.print_):
-                print("The goal was not included in the list")
-            self.target_list.append(self.goal)
-
-        # self.target_list = [2443,2565,2637,6497,9800]
-        print("the LLM generated waypoint list:",self.target_list)
-        
-        self.s_target = self.target_list[1]
-        self.i = 1
-
-        # record = {
-        #     "latency_s": 4,
-        #     "input_tokens": 3,
-        #     "output_tokens": 4,
-        #     "total_tokens": 5,
-        # }
-        # full_output = ""
-
-        # for graphing purposes
-        if graph!= None:
-            for node in graph:
-                self.graph.nodes[node]["type"] = "high_deg"
-        for waypoint in self.target_list:
-            self.graph.nodes[waypoint]["type"] = "waypoint"
-
-        return query,full_output, self.target_list,record
-
-    def initialize_llm_path_layered(self,h_n=True):
-        """
-        generates paths by prompting LLM to generate subapths layer by layer to ensure that the capacity requirements are met
-        """
-        if h_n:
-            prompt = Layer_waypoints_h_n
-        else:
-            prompt = Layer_waypoints
-
-        sub_paths = []
-        curr_source = self.source
-        prompt_output = ""
-
-        for layer in range(len(self.functions)):
-
-            # get adj. list for current layer
-            adj_list = get_adj_list(self.LayerGraphs[layer]["layer_graph"])
-
-            # get the h values for the nodes in this layer
-            if h_n:
-                hop_count = {}
-                # get node ID
-                for node_ID in self.LayerGraphs[layer]["layer_graph"].nodes:
-                    hop_count[node_ID] = self.hop_dist_to_goal.get(node_ID)
-
-            base_prompt = prompt.format(
-                        adjacency_list=adj_list,
-                        src = curr_source,
-                        goal = self.goal if "{goal}" in prompt else "",
-                        node_distance_dict = self.hop_dist_to_goal,
-                        edge_costs=nx.get_edge_attributes(self.LayerGraphs[layer]["layer_graph"], "Cost") if "{edge_costs}" in prompt else "",
-                        gateway_nodes=[i[0] for i in self.LayerGraphs[layer]["layer_gateways"]] if "{gateway_nodes}" in prompt else "",
-                        hop_count = hop_count if "{hop_count}" in prompt else ""
-                    )
-            response = client.responses.parse(
-                # model="gpt-4o-2024-08-06",
-                # model="gpt-4o-mini-2024-07-18",
-                model = self.model_name,
-                input=[
-                    {
-                        "role": "system",
-                        "content": "you are a helpful network optimization assistant.",
-                    },
-                    {"role": "user", "content": base_prompt},
-                ],
-                text_format=path,
-            )
-
-            full_output = response.output[0].content[0].text
-            json_response = json.loads(full_output)
-            temp = extract_nodes(json_response)
-            prompt_output = f"{prompt_output}\n prompt: {base_prompt}, output: {temp}\n"
-
-            # check if the paths end with one of the gateways
-            # Not very efficient
-            pair_map = dict(self.LayerGraphs[layer]["layer_gateways"])  
-
-            if temp!=[] and temp[-1] in [i[0] for i in self.LayerGraphs[layer]["layer_gateways"]]:
-                sub_paths.extend(temp)
-                curr_source = pair_map[temp[-1]]
-
-            else:
-                sub_paths.append([i[0] for i in self.LayerGraphs[layer]["layer_gateways"]][0])
-
-
-            # TODO Does not prompt the LLm for the last layer
-            # TODO remove edges whose resources are already used up
-
-            # check the current path 
-
-
-
-            
-
-        self.target_list = sub_paths
-        if (self.print_):
-            print("LLM response:", json_response)
-
-        # ensure that the source and goal nodes are included in the list
-        if (self.source not in self.target_list):
-            if(self.print_):
-                print("The source was not included in the list")
-            self.target_list.insert(0, self.source)
-        if (self.goal not in self.target_list):
-            if(self.print_):
-                print("The goal was not included in the list")
-            self.target_list.append(self.goal)
-
-        # return query,full_output, self.target_list 
-        return prompt_output,full_output, self.target_list 
-
     def preprocess_landmarks(self, landmarks, weight="Cost"):
         """
         -> compute distance from all vertices to nodes
@@ -785,7 +573,7 @@ class A_search:
         Compute hop distances sequentially to each target in target_list.
         Returns a list of dicts: one distance map per target.
         """
-        G = self.graph# self.layer_graph
+        G = self.graph
         R = G.reverse(copy=False) #reverse graph, in order to discover all nodes that can reach it
         results = []
 
@@ -922,7 +710,7 @@ class A_search:
 
             goal = self.goal
             source = self.source
-            G = self.graph#sself.layer_graph
+            G = self.graph
             service_DR = self.service_DR
             # function_req = [func['requirements']*service_DR for func in self.functions]
             function_req = {func['ID']: func['requirements'] * self.service_DR for func in self.functions}
@@ -967,7 +755,7 @@ class A_search:
                     base_capacity[phys_id] = cap  # added this
             # ---- end base capacity precomputation ----
 
-            # The queue stores priority, node, cost to reach, parent, and Layer, true_node_id
+            # The queue stores priority, node, cost to reach, parent, true_node_id
             # Uses Python heapq to keep in priority order.
             # Add a counter to the queue to prevent the underlying heap from
             # attempting to compare the nodes themselves. The hash breaks ties in the
@@ -986,8 +774,6 @@ class A_search:
             while self.queue:
                 # Pop the smallest item from queue.
                 _, __, curnode, dist, parent = heappop(self.queue)
-                # node_id= G.nodes[(curnode)]["node_id"]
-                # Layer= G.nodes[(curnode)]["Layer"]
 
 
                 if curnode == goal:
@@ -1042,7 +828,7 @@ class A_search:
                 for neighbor, w in G_succ[curnode].items():
                     generated_count += 1
 
-                    # func_at_layer = G.nodes[(curnode)]["function_layer"]
+
                     if "Bandwidth" in G.edges[(curnode, neighbor)]:
                         bw = G.edges[(curnode, neighbor)]["Bandwidth"]
                     # if the link can't handle the service req, skip
@@ -1330,51 +1116,6 @@ class A_search:
                 writer.writerow(row) 
 
 
-                
-    def LLM_pick_landmark(self,k=8):
-        prompt = test_landmark_prompt
-        layer_nodes = ""
-        # layer_nodes = layer_nodes+f"\nThe gateway nodes in layer {i} are {[(u,v,c) for u,c,v in self.LayerGraphs[i]['layer_graph']]}"
-        for i in range(len(self.functions)):
-            layer_nodes = layer_nodes+f"\nThe nodes in layer {i} are {get_adj_list(self.LayerGraphs[i]['layer_graph'])}"
-
-        if self.layer_format:
-            path_ = path_v2
-        else:
-            path_ = path
-
-        adj_list = get_adj_list(self.graph)
-        test_prompt = prompt.format(
-                    adjacency_list=adj_list,
-                    src = self.source if "{src}" in prompt else "",
-                    goal = self.goal if "{goal}" in prompt else "", 
-                    num_layers = len(self.functions) if "{num_layers}" in prompt else "", 
-                    layers_to_nodes = layer_nodes if "{layers_to_nodes}" in prompt else "",
-                    K = k if "{K}" in prompt else "",
-                    edge_costs =nx.get_edge_attributes(self.graph, "Cost") if "{edge_costs}" in prompt else "",
-                )
-
-        # print(test_prompt)
-        response = client.responses.parse(
-            model=self.model_name,
-            input=[
-                {
-                    "role": "system",
-                    "content": "you are a helpful network optimization assistant.",
-                },
-                {"role": "user", "content": query},
-            ],
-            text_format=path_,
-        )
-
-        # compliance = response.output_parsed
-        counter = 0
-
-        full_output = response.output[0].content[0].text
-        self.json_response = json.loads(full_output)
-        landmarks = extract_nodes(self.json_response)
-
-        return landmarks
 
     def generate_landmarks(self,type_,selection_tech,k_landmarks,rng):
 
@@ -1539,24 +1280,14 @@ class A_search:
 
         else:
             for _ in range(max_tries):
-                if graph_struct == "layered":
-                    source = rng.choice(list(LayerGraphs[0]["layer_graph"].nodes))
-                    goal = rng.choice(list(LayerGraphs[-1]["layer_graph"].nodes))
-                    layered_goal=None
-                else:
-                    source,goal = rng.sample(list(self.graph.nodes),k=2)
-                    if node_ID_format=="L0_3":
-                        layered_goal = f"L{Last_layer}_{goal[3:]}"
-                    else:
-                        layered_goal = (Last_layer) * len(self.graph.nodes) + goal
+
+                source,goal = rng.sample(list(self.graph.nodes),k=2)
 
                 # Existence + reachability
                 if source in self.graph and goal in self.graph and nx.has_path(self.graph, source, goal):
-                    # if graph_struct == "flat" and not nx.has_path(self.graph, source, layered_goal):
-                        # pass
                     self.source = source
                     self.goal = goal
-                    return source, goal,layered_goal
+                    return source, goal,""
 
             return None, None,None
 
@@ -1564,36 +1295,7 @@ class A_search:
         return [self.source,self.goal]
 
 
-            # # source,goal,_ = longest_path(self.BA_G)
-            # # source,goal,layered_goal = pick_valid_src_goal(
-            # source,goal = pick_valid_src_goal_flat_graph(self.graph)
-            # if layered:
-            #     source,goal,layered_goal = pick_valid_src_goal(
-            #         G= self.graph,
-            #         LayerGraphs = self.LayerGraphs,
-            #         nodes = nodes,
-            #         num_layers = num_layers,
-            #         layer_format = layer_format,
-            #         layered = layered,
-            #         max_tries = 20,
-            #         flat=flat_,
-            #         functions = self.functions,
-            #     )
-
-
     def print_graph(self,title_):
-        # pos = nx.nx_agraph.graphviz_layout(self.graph, prog="sfdp")
-
-        # plt.figure(figsize=(20, 14))
-        # nx.draw(
-        #     self.graph, pos,
-        #     node_size=60,
-        #     edge_color="lightgray",
-        #     with_labels=False
-        # )
-        # plt.show()
-
-        # TEST PRINT LAYERD GRAPH
         freeze_layout_in_graph(self.graph)
         fig, axes = plt.subplots(1, 1, figsize=(20, 14))
         def load_pos_from_graph(graph, x_attr="x", y_attr="y"):

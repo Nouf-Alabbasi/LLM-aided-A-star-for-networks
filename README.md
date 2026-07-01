@@ -17,25 +17,25 @@ git clone https://github.com/Nouf-Alabbasi/LLM-aided-A-star-for-networks
 cd LLM-aided-A-star-for-networks
 ```
 
-1. create enviroment
+2. create enviroment
 ```
 conda create --name LLM_aided_ASTAR
 conda activate LLM_aided_ASTAR
 ```
 
-2. install requirements
+3. install requirements
 ```
 pip install -r requirements.txt 
 ```
 
-3. set your OpenAI key in the `utils_4.py`
+4. set your OpenAI key in the `utils_4.py`
 ```
 open_AI_key = ""
 ```
-4. download the SNAP graph dataset from `https://snap.stanford.edu/data/roadNet-TX.html` and set the path in `self.physical_graph = load_snap_road_network("path/roadNet-TX.txt")`
+5. download the SNAP graph dataset from `https://snap.stanford.edu/data/roadNet-TX.html` and set the path in `self.physical_graph = load_snap_road_network("path/roadNet-TX.txt")`
 
 
-2. run ``run_main.py``
+6. run ``run_main.py``
  - this will produce the graphs and run both A* and LLM A* and produce a CSV file with the results
 
 ### results

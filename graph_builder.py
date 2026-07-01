@@ -436,24 +436,18 @@ class SFCGraphBuilder:
 
     def save_graph(self, output_dir="graph/"):
         """
-        Save the layered graph in multiple formats for inspection.
+        Save the graph in multiple formats for inspection.
         :param output_dir: Directory to save the graph files.
         """
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
-        nx.write_graphml(self.layer_graph, os.path.join(output_dir, "layered.graphml"))
-        nx.write_gml(self.layer_graph, os.path.join(output_dir, "layered.gml"))
-        nx.write_edgelist(self.layer_graph, os.path.join(output_dir, "layered.edgelist"), data=True)
+        nx.write_graphml(self.layer_graph, os.path.join(output_dir, "graph.graphml"))
+        nx.write_gml(self.layer_graph, os.path.join(output_dir, "graph.gml"))
+        nx.write_edgelist(self.layer_graph, os.path.join(output_dir, "graph.edgelist"), data=True)
+
 
     def get_graph(self,type_):
-        if (type_ == "layered"):
-            return self.layer_graph
-        elif (type_ == "graph_layers"):
-            return self.LayerGraphs
-        else:
-            return self.physical_graph
-
-
+        return self.physical_graph
 
 def build_and_save_graph(size, version_i, edge_degree, graph_type, cost, graph_struct, node_ID_format,
                          functions, service_DR, base_seed, out_dir: Path,rng):
@@ -461,13 +455,6 @@ def build_and_save_graph(size, version_i, edge_degree, graph_type, cost, graph_s
     builder = SFCGraphBuilder(functions, service_DR=service_DR)
     builder.create_graph(size, edge_degree, rng, type_=graph_type, k=edge_degree)
     builder.conver_to_weighted_graph(cost, rng)
-
-    if graph_struct == "layered":
-        if node_ID_format == "L0_3":
-            builder.get_layered_graph_v2()
-        else:
-            builder.get_layered_graph()
-
     G = builder.get_graph(graph_struct)
 
 

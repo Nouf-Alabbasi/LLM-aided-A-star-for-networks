@@ -23,7 +23,7 @@ prompt_names = ["adj_list","adj_list_CoT","adj_list_no_limit","adj_list_few_shot
 prompt =  adj_list_h_values
 prompt_name =  "adj_list_h_values"
 
-graph_size =[750,1000,1500]
+graph_size =[750]
 num_waypoints = [5,8,12]
 
 model_name = "gpt-4.1-2025-04-14"
@@ -210,7 +210,7 @@ for waypoint in num_waypoints:
             else:
                 print("=================================== generating landmarks")
                 landmark_sel_tech = "furthest"
-                path_finder.generate_landmarks(graph_struct, landmark_sel_tech, k_landmarks, graph_layers, rng)
+                path_finder.generate_landmarks(graph_struct, landmark_sel_tech, k_landmarks, rng)
                 landmark=path_finder.get_landmarks()
                 landmarks[gkey] = landmark
 
@@ -251,7 +251,7 @@ for waypoint in num_waypoints:
                 print("=================================== generating waypoints")
                 path_finder.set_num_waypoints(waypoint)
 
-                query_flat,full_output_flat, t_list_flat,LLM_info = path_finder._initialize_llm_paths_limited(graph_struct, graph_layers,node_ID_format,prompt,len_layers=len(functions),adj_list_format=adj_list_format)
+                query_flat,full_output_flat, t_list_flat,LLM_info = path_finder._initialize_llm_paths_limited(node_ID_format,prompt,"_",adj_list_format=adj_list_format)
                 waypoint_lists.append(t_list_flat)
 
 

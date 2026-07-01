@@ -1,3 +1,6 @@
+from typing import Literal, List, Optional
+from pydantic import BaseModel
+
 # ==================== adj_list | - , CoT, few_shot, limited waypoints
 
 adj_list= """
@@ -476,3 +479,9 @@ From the identified path, select a set of {num_waypoints} key waypoints.
 Answer: [node_ID, node_ID, ..., {goal}]
 """
 
+
+
+class path(BaseModel):
+    Steps: str
+    full_path: List[int]
+    node: List[int]
