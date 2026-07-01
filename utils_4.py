@@ -297,7 +297,7 @@ def suboptimal_by_removing_edge(G, source, goal, weight="Cost"):
     return top2[1]  # sub-optimal (2nd best)
 
 
-open_AI_key = "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"
+open_AI_key = ""
 client = OpenAI(api_key = open_AI_key)
 def get_adj_list_cost(graph):
     # Get the adjacency list
