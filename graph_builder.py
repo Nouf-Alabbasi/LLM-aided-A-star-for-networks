@@ -1,15 +1,11 @@
 from utils_4 import *
-from test_graph_generation import *
 
 import os
 import networkx as nx
 from pandas import read_csv
 import math
 from networkx.algorithms.shortest_paths.weighted import _weight_function
-from prompt import *
-from prompt_test import *
-from prompt_basic import *
-from prompts_v2 import *
+from prompts_final import *
 from heapq import heappop, heappush
 from itertools import count
 from collections import deque
@@ -115,15 +111,13 @@ class SFCGraphBuilder:
 
 
         elif type_=="advogato":
-            self.physical_graph = load_snap_road_network("/Users/noufabbasi/Library/Mobile  Documents/com~apple~CloudDocs/khalifa_2023-/Thesis/IRL_summer_2025/ToT_/SFC_LLM/network-corpus/networks/advogato.txt")
-            # self.physical_graph = load_snap_road_network("/Users/noufabbasi/Library/Mobile Documents/com~apple~CloudDocs/khalifa_2023-/Thesis/IRL_summer_2025/ToT_/SFC_LLM/network-corpus/networks/AS-oregon-1.txt")
-            # self.physical_graph = load_snap_road_network("/Users/noufabbasi/Library/Mobile Documents/com~apple~CloudDocs/khalifa_2023-/Thesis/IRL_summer_2025/ToT_/SFC_LLM/network-corpus/networks/BioGrid-Co-Localization.txt")
+            self.physical_graph = load_snap_road_network("filename/advogato.txt")
             self.physical_graph = self.get_subset(self.physical_graph , 10,k=k)
             print(f"there are {len(self.physical_graph.nodes)} in the subset with k = {k}")
         elif type_ == "colt_tel":
-            self.physical_graph = load_snap_road_network("/Users/noufabbasi/Library/Mobile Documents/com~apple~CloudDocs/khalifa_2023-/Thesis/IRL_summer_2025/ToT_/SFC_LLM/network-corpus/colt_tel.txt",type_=type_)
+            self.physical_graph = load_snap_road_network("filename/colt_tel.txt",type_=type_)
         elif type_ == "real":
-            self.physical_graph = load_snap_road_network("/Users/noufabbasi/Library/Mobile Documents/com~apple~CloudDocs/khalifa_2023-/Thesis/IRL_summer_2025/ToT_/SFC_LLM/real/fungi/graphs/basidiomycetes_lbc_net.txt",type_=type_)
+            self.physical_graph = load_snap_road_network("filename/basidiomycetes_lbc_net.txt",type_=type_)
         elif type_ == "llp":
             self.physical_graph = nx.lollipop_graph(500, 500)
             nx.path_graph(1000)

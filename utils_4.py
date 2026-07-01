@@ -297,7 +297,7 @@ def suboptimal_by_removing_edge(G, source, goal, weight="Cost"):
     return top2[1]  # sub-optimal (2nd best)
 
 
-open_AI_key = ""
+open_AI_key = "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"
 client = OpenAI(api_key = open_AI_key)
 def get_adj_list_cost(graph):
     # Get the adjacency list
@@ -1738,3 +1738,177 @@ def load_graph_from_registry(registry, gkey):
     # If your saved graphs are undirected sometimes, adjust create_using accordingly.
     return G
 
+
+def load_snap_road_network(filepath, directed=True,type_="other",multigraph = False):
+    """
+    Load Stanford Large Network Dataset (SNAP) road network from TXT file.
+    Format: edge list with comments starting with '#'
+    
+    Example file (roadNet-TX.txt):
+        # Directed graph...
+        # FromNodeId	ToNodeId
+        0	1
+        0	2
+        1	0
+        ...
+    
+    Args:
+        filepath: Path to the .txt file (e.g., "roadNet-TX.txt")
+        directed: If True, create DiGraph; else undirected Graph
+    
+    Returns:
+        NetworkX graph object
+    """
+    # print(f"Loading SNAP road network from: {filepath}")
+    if type_== "colt_tel":
+        node_ids = set()
+        edges = []
+
+        in_node = False
+        in_edge = False
+        cur_node_id = None
+        cur_source = None
+        cur_target = None
+
+        def finalize_node():
+            nonlocal cur_node_id
+            if cur_node_id is not None:
+                node_ids.add(cur_node_id)
+            cur_node_id = None
+
+        def finalize_edge():
+            nonlocal cur_source, cur_target
+            if cur_source is not None and cur_target is not None:
+                edges.append((cur_source, cur_target))
+            cur_source = None
+            cur_target = None
+
+        with open(filepath, "r", encoding="utf-8") as f:
+            for raw in f:
+                line = raw.strip()
+
+                if not line or line.startswith("#"):
+                    continue
+
+                # Enter blocks
+                if line.startswith("node ["):
+                    in_node = True
+                    cur_node_id = None
+                    continue
+
+                if line.startswith("edge ["):
+                    in_edge = True
+                    cur_source = None
+                    cur_target = None
+                    continue
+
+                # Exit blocks
+                if line == "]":
+                    if in_node:
+                        finalize_node()
+                        in_node = False
+                    elif in_edge:
+                        finalize_edge()
+                        in_edge = False
+                    continue
+
+                # Parse fields inside node block
+                if in_node:
+                    # Example: id 123
+                    if line.startswith("id "):
+                        cur_node_id = int(line.split()[1])
+                    continue
+
+                # Parse fields inside edge block
+                if in_edge:
+                    # Example: source 0
+                    if line.startswith("source "):
+                        cur_source = int(line.split()[1])
+                    elif line.startswith("target "):
+                        cur_target = int(line.split()[1])
+                    continue
+
+        # Build SIMPLE graph and ignore duplicates
+        G = nx.DiGraph() if directed else nx.Graph()
+        G.add_nodes_from(sorted(node_ids))
+
+        seen = set()
+        if directed:
+            for u, v in edges:
+                if (u, v) in seen:
+                    continue
+                seen.add((u, v))
+                G.add_edge(u, v)
+                G.add_edge(v, u)
+        else:
+            for u, v in edges:
+                a, b = (u, v) if u <= v else (v, u)
+                if (a, b) in seen:
+                    continue
+                seen.add((a, b))
+                G.add_edge(a, b)
+
+        return G
+    elif type_ == "real":
+        G = nx.DiGraph() if directed else nx.Graph()
+
+        with open(filepath, "r") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+
+                parts = list(map(int, line.split()))
+                u = parts[0]
+                neighbors = parts[1:]
+
+                for v in neighbors:
+                    G.add_edge(u, v)
+        largest_wcc = max(nx.weakly_connected_components(G), key=len)
+        G_main = G.subgraph(largest_wcc).copy()
+        return G_main
+    else:
+        try:
+            # Read the file, skipping comment lines (starting with #)
+            G = nx.DiGraph() if directed else nx.Graph()
+            
+            with open(filepath, 'r') as f:
+                edge_count = 0
+                for line in f:
+                    # Skip comment lines and empty lines
+                    if line.startswith('#') or line.strip() == '':
+                        continue
+                    
+                    # Parse edge
+                    parts = line.strip().split('\t')
+                    if len(parts) >= 2:
+                        try:
+                            from_node = int(parts[0])
+                            to_node = int(parts[1])
+                            G.add_edge(from_node, to_node)
+                            edge_count += 1
+                        except ValueError:
+                            # Skip lines that can't be parsed
+                            continue
+                    else:
+                        parts = line.strip().split(' ')
+                        if len(parts) >= 2:
+                            try:
+                                from_node = int(parts[0])
+                                to_node = int(parts[1])
+                                G.add_edge(from_node, to_node)
+                                edge_count += 1
+                            except ValueError:
+                                # Skip lines that can't be parsed
+                                continue
+
+            
+            print(f"Loaded network: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges")
+            return G
+        
+        except FileNotFoundError:
+            print(f"Error: File not found: {filepath}")
+            return None
+        except Exception as e:
+            print(f"Error loading SNAP network: {e}")
+            return None

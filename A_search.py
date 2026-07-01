@@ -26,7 +26,6 @@ from collections import Counter
 import landmark_picker
 import time
 import re
-import examples
 from sortedcontainers import SortedList
 
 class A_search:
@@ -88,7 +87,7 @@ class A_search:
 
     """Shortest paths and path lengths using the A* ("A star") algorithm."""
     __all__ = ["astar_path", "astar_path_length"]
-    @nx._dispatchable(edge_attrs="weight", preserve_node_attrs="heuristic")
+    # @nx._dispatchable(edge_attrs="weight", preserve_node_attrs="heuristic")
 
     def astar_path(self, weight="Cost", *, test_name = None, cutoff=None, constrain=True, service_DR=0,cap_check=True,g_n=1):
         """Returns a list of nodes in a shortest path between source and goal
@@ -1019,16 +1018,6 @@ class A_search:
                             total_delay += G.edges[u, v].get("Cost", 0)
 
                     # # =============saving the graph
-                    # freeze_layout_in_graph(G)
-                    # # pos = stacked_layer_pos(self.layer_graph, num_nodes_per_layer=self.G.number_of_nodes(),
-                    # #                         base_layout="spring", seed=42, layer_gap=6.0)
-
-                    # # freeze_pos_into_graph(self.layer_graph, pos)
-                    # current_datetime = datetime.now()
-                    # filename = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
-                    # filename = f"{test_name}_graph_src{self.source}_dst{self.goal}_graph_nodes{len(self.graph.nodes)}_{filename}"
-                    # nx.write_graphml(G, '/Users/noufabbasi/Library/Mobile Documents/com~apple~CloudDocs/khalifa_2023-/Thesis/IRL_summer_2025/ToT_/SFC_LLM/graph/' + filename)
-                    # print("Graph saved as \n\n"+filename)
                     return path,self.get_path_cost(path),{"enqueued_size":len(enqueued), "pushed count":pushed_count, "generated_count":generated_count,"expanded_count":expanded_count}
 
 
