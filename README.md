@@ -10,10 +10,29 @@ We propose a large language model (LLM)- aided A* algorithm in which an LLM gene
 
 
 ### How to run code
+
 1. clone the repository
 ```
 git clone https://github.com/Nouf-Alabbasi/LLM-aided-A-star-for-networks
+cd LLM-aided-A-star-for-networks
 ```
+
+1. create enviroment
+```
+conda create --name LLM_aided_ASTAR
+conda activate LLM_aided_ASTAR
+```
+
+2. install requirements
+```
+pip install -r requirements.txt 
+```
+
+3. set your OpenAI key in the `utils_4.py`
+```
+open_AI_key = ""
+```
+
 2. run ``run_main.py``
  - this will produce the graphs and run both A* and LLM A* and produce a CSV file with the results
 

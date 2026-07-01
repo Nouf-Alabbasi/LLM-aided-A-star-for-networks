@@ -6,10 +6,7 @@ import networkx as nx
 from pandas import read_csv
 import math
 from networkx.algorithms.shortest_paths.weighted import _weight_function
-from prompt import *
-from prompt_test import *
-from prompt_basic import *
-from prompts_v2 import *
+from prompts_final import *
 from heapq import heappop, heappush
 from itertools import count
 from collections import deque

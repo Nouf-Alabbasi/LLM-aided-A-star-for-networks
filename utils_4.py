@@ -5,10 +5,7 @@ import networkx as nx
 from pandas import read_csv
 import math
 from networkx.algorithms.shortest_paths.weighted import _weight_function
-from prompt import *
-from prompt_test import *
-from prompt_basic import *
-from prompts_v2 import *
+from prompts_final import *
 from heapq import heappop, heappush
 from itertools import count
 from collections import deque
@@ -300,9 +297,7 @@ def suboptimal_by_removing_edge(G, source, goal, weight="Cost"):
     return top2[1]  # sub-optimal (2nd best)
 
 
-# run in (sfc-llm) env
 open_AI_key = ""
-client = OpenAI(api_key = open_AI_key)
 client = OpenAI(api_key = open_AI_key)
 def get_adj_list_cost(graph):
     # Get the adjacency list
